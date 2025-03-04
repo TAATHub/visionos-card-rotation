@@ -10,6 +10,7 @@ struct CardRotationApp: App {
             ContentView()
                 .environment(appModel)
         }
+        .windowResizability(.contentSize)
 
         ImmersiveSpace(id: appModel.immersiveSpaceID) {
             ImmersiveView()
