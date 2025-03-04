@@ -3,17 +3,28 @@ import RealityKit
 import RealityKitContent
 
 struct ImmersiveView: View {
-
+    @State private var cardModel: CardModel = .init()
+    
     var body: some View {
         RealityView { content in
-            // Add the initial RealityKit content
-            if let immersiveContentEntity = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
-                content.add(immersiveContentEntity)
+            if let scene = try? await Entity(named: "Immersive", in: realityKitContentBundle) {
+                content.add(scene)
 
-                // Put skybox here.  See example in World project available at
-                // https://developer.apple.com/
+                _ = cardModel.createCards().map { scene.addChild($0) }
+
+                CardFlipSystem.registerSystem()
             }
         }
+        .gesture(DragGesture().targetedToAnyEntity().onChanged({ value in
+            // Translation vector by drag gesture
+            let translation = value.convert(value.gestureValue.translation3D, from: .local, to: .scene)
+            cardModel.onDragChanged(translation: translation)
+        }).onEnded({ _ in
+            cardModel.onDragEnded()
+        }))
+        .gesture(SpatialTapGesture().targetedToAnyEntity().onEnded({ value in
+            cardModel.onTapEnded(entity: value.entity)
+        }))
     }
 }
 
